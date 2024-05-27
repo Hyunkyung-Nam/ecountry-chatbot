@@ -17,3 +17,34 @@ exports.findJob = (job) => {
     const oneJob = findJob.get(job);
     return oneJob;
 };
+exports.getAllTaxes = () => {
+    const allTaxes = db.prepare("SELECT * FROM taxes");
+    const result = allTaxes.all();
+    return result;
+};
+exports.insertTaxes = (tax) => {
+    const insert = db.prepare("INSERT INTO taxes (tax) VALUES (@tax)");
+    insert.run({ tax });
+};
+
+exports.findTaxes = (tax) => {
+    const findTaxes = db.prepare("SELECT * FROM taxes WHERE tax = ?");
+    const oneTaxes = findTaxes.get(tax);
+    return oneTaxes;
+};
+exports.getAllPenalty = () => {
+    const allTaxes = db.prepare("SELECT * FROM penalties");
+    const result = allTaxes.all();
+    return result;
+};
+exports.insertPenalties = (penalty) => {
+    const insert = db.prepare("INSERT INTO penalties (penalty) VALUES (@penalty)");
+
+    insert.run({ penalty });
+};
+
+exports.findPenalty = (penalty) => {
+    const findTaxes = db.prepare("SELECT * FROM penalties WHERE penalty = ?");
+    const oneTaxes = findTaxes.get(penalty);
+    return oneTaxes;
+};
