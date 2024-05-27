@@ -11,20 +11,56 @@ exports.eventHook = (req, res) => {
 
     const intentName = intent.displayName;
     console.log("intentName : ", intentName);
-    if (intentName == "add-jobs") {
+
+    if (intentName == "add-job") {
         const { jobs } = parameters;
+        console.log(jobs);
         if (model.findJob(jobs) === undefined) {
             //jobs에 해당하는 값이 디비에 없으면 추가
             model.insertJobs(jobs);
-            //해당값 entity 리스트에도 등록
+            res.json({ fulfillmentText: `${jobs}등록 완료` });
         }
-        console.log(model.getAllJobs());
-        res.json({ fulfillmentText: `직업 : ${fulfillmentText}` });
-    } else if (intentName == "find-jobs") {
-        //직업을 찾는 문구면 직업리스트 객체 배열로 보내줌
-        const jobList = model.getAllJobs();
+        res.json({ fulfillmentText: `${jobs} 이미 존재!` });
+    } else if (intentName == "add-tax") {
+        let { taxes } = parameters;
+        if (model.findTaxes(taxes) === undefined) {
+            //jobs에 해당하는 값이 디비에 없으면 추가
+            model.insertTaxes(taxes);
+            res.json({ fulfillmentText: `${taxes} 등록 완료` });
+        }
+        res.json({ fulfillmentText: `${taxes} 이미 존재!` });
+    } else if (intentName == "add-penalty") {
+        let { penalties: penalty } = parameters;
+        if (model.findPenalty(penalty) === undefined) {
+            //jobs에 해당하는 값이 디비에 없으면 추가
+            model.insertPenalties(penalty);
+            res.json({ fulfillmentText: `${penalty} 등록 완료` });
+        }
+        res.json({ fulfillmentText: `${penalty} 이미 존재!` });
+    } else if (intentName == "find-list") {
+        let list;
+        switch (parameters.list) {
+            case "직업":
+                list = model.getAllJobs();
+                break;
+            case "세금":
+                list = model.getAllTaxes();
+                break;
+            case "과태료":
+                list = model.getAllPenalty();
+                break;
+            case "추천도서":
+                console.log("추천도서");
+                break;
+            case "지구촌소식":
+                console.log("지구촌소식");
+                break;
+            default:
+                console.log("아무것도안들어옴");
+                break;
+        }
 
-        res.json({ fulfillmentText: JSON.stringify({ jobList }) });
+        res.json({ fulfillmentText: JSON.stringify({ list }) });
     } else {
         console.log(` No intent matched.`);
     }
