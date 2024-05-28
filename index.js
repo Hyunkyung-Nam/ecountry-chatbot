@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 app.use("/api/dialogflow", require("./routes/query"));
 app.use("/api/event", require("./routes/eventHook"));
 app.use("/api/getData", require("./routes/dataProcessing"));
-app.use("/hello", (req, res) => {
+app.get("/hello", (req, res) => {
     res.send("hello");
 });
 
