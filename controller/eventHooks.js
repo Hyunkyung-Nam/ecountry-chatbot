@@ -46,7 +46,7 @@ exports.eventHook = async (req, res) => {
                 case "직업":
                     list = model.getAllJobs();
                     break;
-                case "세금":
+                case "세법":
                     list = model.getAllTaxes();
                     break;
                 case "과태료":
@@ -55,7 +55,7 @@ exports.eventHook = async (req, res) => {
                 case "추천도서":
                     console.log("추천도서");
                     break;
-                case "지구촌소식":
+                case "지구촌 소식":
                     list = await getNews();
                     console.log("list : " + list);
                     break;
@@ -107,7 +107,7 @@ const getNews = async () => {
                 let news = {
                     title: $(this).find(".title").text(),
                     url: data.url,
-                    image_url: data.image_url,
+                    imageUrl: data.image_url,
                     date: data.date,
                     writer: $(this).find("ul .writer").text().replaceAll("\n", "").replaceAll("\t", ""),
                     description: $(this).find("span").text(),
