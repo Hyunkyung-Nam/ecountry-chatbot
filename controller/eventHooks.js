@@ -65,11 +65,148 @@ exports.eventHook = async (req, res) => {
             }
 
             res.json({ fulfillmentText: JSON.stringify({ list }) });
+        } else if (intentName == "find-generation") {
+            const { generation } = parameters;
+            let inputGeneration = "";
+            for (let index in generation) {
+                inputGeneration += generation[index];
+            }
+            res.json({
+                fulfillmentText: JSON.stringify({
+                    list: {
+                        bookList: await findBooks("generation", inputGeneration),
+                    },
+                }),
+            });
+        } else if (intentName == "find-keyword") {
+            const { keyword } = parameters;
+            let inputKeyword = "";
+            for (let index in keyword) {
+                inputKeyword += keyword[index].replaceAll(" ", "");
+            }
+            inputKeyword = inputKeyword.replaceAll("키워드", "").replaceAll(" ", "");
+
+            res.json({
+                fulfillmentText: JSON.stringify({
+                    list: {
+                        bookList: await findBooks("keyword", inputKeyword),
+                    },
+                }),
+            });
+        } else if (intentName == "find-writer") {
+            const { writer } = parameters;
+            let inputWriter = "";
+            for (let index in writer) {
+                inputWriter += writer[index];
+            }
+            res.json({
+                fulfillmentText: JSON.stringify({
+                    list: {
+                        bookList: await findBooks("writer", inputWriter),
+                    },
+                }),
+            });
+        } else if (intentName == "find-hot-books") {
+            res.json({
+                fulfillmentText: JSON.stringify({
+                    list: {
+                        bookList: await findHotBooks(),
+                    },
+                }),
+            });
         } else {
             console.log(` No intent matched.`);
         }
     } catch (e) {
         console.log("오류 : " + e);
+    }
+};
+const findBooks = async (key, value) => {
+    try {
+        let url = "";
+        switch (key) {
+            case "writer":
+                url = `http://data4library.kr/api/srchBooks?authKey=${process.env.LIBRARY_API_KEY}&author=${value}&pageNo=1&pageSize=5&format=json`;
+                break;
+            case "generation":
+                if (value == "초등학생" || value == "중학생" || value == "고등학생") {
+                    const fromAge = value == "초등학생" ? 8 : value == "중학생" ? 14 : 17;
+                    const toAge = value == "초등학생" ? 13 : value == "중학생" ? 16 : 19;
+                    console.log(`시작 : ${fromAge} 끝 : ${toAge}}`);
+                    url = `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&from_age=${fromAge}&to_age=${toAge}&pageNo=1&pageSize=5&format=json`;
+                } else {
+                    const age = value.replace("대 이상", "").replace("대", "");
+                    url = `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&age=${age}&pageNo=1&pageSize=5&format=json`;
+                }
+                break;
+            case "keyword":
+                url = `http://data4library.kr/api/srchBooks?authKey=${process.env.LIBRARY_API_KEY}&keyword=${value}&pageNo=1&pageSize=5&format=json`;
+                break;
+        }
+        console.log(url);
+        const resData = await axios.get(url);
+        const { docs } = resData.data.response;
+
+        const bookList = [];
+        for (let data of docs) {
+            const { doc } = data;
+            const { isbn13 } = doc;
+            const resData = await axios.get(
+                `http://data4library.kr/api/srchDtlList?authKey=${process.env.LIBRARY_API_KEY}&isbn13=${isbn13}&format=json`
+            );
+            const { detail } = resData.data.response;
+            console.log(detail[0].book);
+            const book = {
+                title: doc.bookname,
+                url: doc.bookDtlUrl,
+                imageUrl: doc.bookImageURL,
+                date: detail[0].book.publication_year,
+                writer: doc.authors,
+                description: detail[0].book.description,
+            };
+            bookList.push(book);
+        }
+        return bookList;
+    } catch (e) {
+        console.log(`${value} 가져오기 오류 : ` + e);
+        return {};
+    }
+};
+
+//인기 도서
+const findHotBooks = async () => {
+    try {
+        const resData = await axios.get(
+            `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&pageNo=1&pageSize=5&format=json`
+        );
+        const { docs } = resData.data.response;
+        const bookList = [];
+
+        if (docs.length !== 0) {
+            for (let docList of docs) {
+                const { doc } = docList;
+                const { isbn13 } = doc;
+                console.log("isbn13" + isbn13);
+                const resData = await axios.get(
+                    `http://data4library.kr/api/srchDtlList?authKey=${process.env.LIBRARY_API_KEY}&isbn13=${isbn13}&format=json`
+                );
+                const { detail } = resData.data.response;
+                console.log(detail[0].book);
+                const book = {
+                    title: doc.bookname,
+                    url: doc.bookDtlUrl,
+                    imageUrl: doc.bookImageURL,
+                    date: detail[0].book.publication_year,
+                    writer: doc.authors,
+                    description: detail[0].book.description,
+                };
+                bookList.push(book);
+            }
+        }
+        return bookList;
+    } catch (e) {
+        console.log("인기도서 가져오기 오류 : " + e);
+        return {};
     }
 };
 
