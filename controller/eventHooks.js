@@ -8,6 +8,7 @@ exports.eventHook = async (req, res) => {
     const { queryText, parameters, outputContexts, intent } = queryResult;
 
     console.log(intent.name);
+    console.log(outputContexts);
 
     try {
         console.log("parameters" + JSON.stringify(parameters));
@@ -74,13 +75,40 @@ exports.eventHook = async (req, res) => {
             for (let index in generation) {
                 inputGeneration += generation[index];
             }
-            res.json({
-                fulfillmentText: JSON.stringify({
-                    list: {
-                        bookList: await findBooks("generation", inputGeneration),
+            const currentTime = new Date().getTime();
+
+            bookList = await findBooks("generation", inputGeneration);
+            while (currentTime + 4500 >= new Date().getTime()) {
+                if (Object.keys(bookList).length != 0) {
+                    console.log("111111111111");
+                    res.json({
+                        fulfillmentText: JSON.stringify({
+                            list: {
+                                bookList,
+                            },
+                        }),
+                    });
+                    break;
+                }
+            }
+            if (Object.keys(bookList).length == 0) {
+                console.log("222222222222");
+                res.json({
+                    followupEventInput: {
+                        name: "find-generation-followup",
+                        languageCode: "ko",
                     },
-                }),
-            });
+                });
+            } else {
+                console.log("3333333333");
+                res.json({
+                    fulfillmentText: JSON.stringify({
+                        list: {
+                            bookList,
+                        },
+                    }),
+                });
+            }
         } else if (intentName == "find-keyword") {
             const { keyword } = parameters;
             let inputKeyword = "";
