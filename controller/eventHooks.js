@@ -16,7 +16,8 @@ exports.eventHook = async (req, res) => {
         console.log("intentName : ", intentName);
 
         if (intentName == "add-job") {
-            const { jobs } = parameters;
+            let { jobs } = parameters;
+            jobs = jobs.replaceAll("등록 ", "");
             console.log(jobs);
             if (model.findJob(jobs) === undefined) {
                 //jobs에 해당하는 값이 디비에 없으면 추가
@@ -26,6 +27,7 @@ exports.eventHook = async (req, res) => {
             res.json({ fulfillmentText: `${jobs} 이미 존재!` });
         } else if (intentName == "add-tax") {
             let { taxes } = parameters;
+            taxes = taxes.replaceAll("등록 ", "");
             if (model.findTaxes(taxes) === undefined) {
                 //jobs에 해당하는 값이 디비에 없으면 추가
                 model.insertTaxes(taxes);
@@ -34,6 +36,7 @@ exports.eventHook = async (req, res) => {
             res.json({ fulfillmentText: `${taxes} 이미 존재!` });
         } else if (intentName == "add-penalty") {
             let { penalties: penalty } = parameters;
+            penalty = penalty.replaceAll("등록 ", "");
             if (model.findPenalty(penalty) === undefined) {
                 //jobs에 해당하는 값이 디비에 없으면 추가
                 model.insertPenalties(penalty);
@@ -121,6 +124,12 @@ exports.eventHook = async (req, res) => {
         console.log("오류 : " + e);
     }
 };
+const getDateString = (chageDate) => {
+    const year = chageDate.getFullYear();
+    const month = ("0" + (chageDate.getMonth() + 1)).slice(-2);
+    const date = ("0" + chageDate.getDate()).slice(-2);
+    return year + "-" + month + "-" + date;
+};
 const findBooks = async (key, value) => {
     try {
         let url = "";
@@ -129,14 +138,18 @@ const findBooks = async (key, value) => {
                 url = `http://data4library.kr/api/srchBooks?authKey=${process.env.LIBRARY_API_KEY}&author=${value}&pageNo=1&pageSize=5&format=json`;
                 break;
             case "generation":
+                const now = new Date();
+                const oneMonthBefore = new Date(now.setMonth(now.getMonth() - 1));
+                const startDate = getDateString(oneMonthBefore);
+
                 if (value == "초등학생" || value == "중학생" || value == "고등학생") {
                     const fromAge = value == "초등학생" ? 8 : value == "중학생" ? 14 : 17;
                     const toAge = value == "초등학생" ? 13 : value == "중학생" ? 16 : 19;
                     console.log(`시작 : ${fromAge} 끝 : ${toAge}}`);
-                    url = `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&from_age=${fromAge}&to_age=${toAge}&pageNo=1&pageSize=5&format=json`;
+                    url = `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&startDt=${startDate}&from_age=${fromAge}&to_age=${toAge}&pageNo=1&pageSize=5&format=json`;
                 } else {
                     const age = value.replace("대 이상", "").replace("대", "");
-                    url = `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&age=${age}&pageNo=1&pageSize=5&format=json`;
+                    url = `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&startDt=${startDate}&age=${age}&pageNo=1&pageSize=5&format=json`;
                 }
                 break;
             case "keyword":
