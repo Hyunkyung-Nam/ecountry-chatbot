@@ -142,9 +142,9 @@ const findBooks = async (key, value) => {
                 const oneMonthBefore = new Date(now.setMonth(now.getMonth() - 1));
                 const startDate = getDateString(oneMonthBefore);
 
-                if (value == "초등학생" || value == "중학생" || value == "고등학생") {
-                    const fromAge = value == "초등학생" ? 8 : value == "중학생" ? 14 : 17;
-                    const toAge = value == "초등학생" ? 13 : value == "중학생" ? 16 : 19;
+                if (value == "초등학생" || value == "중학생" || value == "고등학생" || value == "유아") {
+                    const fromAge = value == "초등학생" ? 8 : value == "중학생" ? 14 : value == "유아" ? 5 : 17;
+                    const toAge = value == "초등학생" ? 13 : value == "중학생" ? 16 : value == "유아" ? 7 : 19;
                     console.log(`시작 : ${fromAge} 끝 : ${toAge}}`);
                     url = `http://data4library.kr/api/loanItemSrch?authKey=${process.env.LIBRARY_API_KEY}&startDt=${startDate}&from_age=${fromAge}&to_age=${toAge}&pageNo=1&pageSize=5&format=json`;
                 } else {
