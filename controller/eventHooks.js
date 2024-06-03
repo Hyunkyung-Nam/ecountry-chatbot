@@ -75,40 +75,22 @@ exports.eventHook = async (req, res) => {
             for (let index in generation) {
                 inputGeneration += generation[index];
             }
-            const currentTime = new Date().getTime();
+            // const currentTime = new Date().getTime();
 
-            bookList = await findBooks("generation", inputGeneration);
-            while (currentTime + 4500 >= new Date().getTime()) {
-                if (Object.keys(bookList).length != 0) {
-                    console.log("111111111111");
-                    res.json({
-                        fulfillmentText: JSON.stringify({
-                            list: {
-                                bookList,
-                            },
-                        }),
-                    });
-                    break;
-                }
-            }
-            if (Object.keys(bookList).length == 0) {
-                console.log("222222222222");
-                res.json({
-                    followupEventInput: {
-                        name: "find-generation-followup",
-                        languageCode: "ko",
+            // bookList = await findBooks("generation", inputGeneration);
+            // while (currentTime + 4500 >= new Date().getTime()) {
+            // if (Object.keys(bookList).length != 0) {
+            //     console.log("111111111111");
+            res.json({
+                fulfillmentText: JSON.stringify({
+                    list: {
+                        bookList: await findBooks("generation", inputGeneration),
                     },
-                });
-            } else {
-                console.log("3333333333");
-                res.json({
-                    fulfillmentText: JSON.stringify({
-                        list: {
-                            bookList,
-                        },
-                    }),
-                });
-            }
+                }),
+            });
+            //         break;
+            // }
+            // }
         } else if (intentName == "find-keyword") {
             const { keyword } = parameters;
             let inputKeyword = "";
