@@ -3,6 +3,14 @@ const model = require("../models/chatbot.js");
 const axios = require("axios");
 const cheerio = require("cheerio");
 
+exports.resetDB = async (req, res) => {
+    model.reset();
+    res.json({
+        result: "삭제완료",
+        model: { jobs: model.getAllJobs(), taxes: model.getAllTaxes(), penalties: model.getAllPenalty() },
+    });
+};
+
 exports.eventHook = async (req, res) => {
     const { responseId, queryResult, originalDetectIntentRequest, session } = req.body;
     const { queryText, parameters, outputContexts, intent } = queryResult;

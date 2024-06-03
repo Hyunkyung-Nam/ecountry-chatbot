@@ -1,6 +1,15 @@
 const Database = require("better-sqlite3");
 const db = new Database("./models/chatbot.db", { verbose: console.log });
 
+exports.reset = () => {
+    const removeJobs = db.prepare("DELETE FROM jobs");
+    const removeTaxes = db.prepare("DELETE FROM taxes");
+    const removePenalties = db.prepare("DELETE FROM penalties");
+    removeJobs.run();
+    removeTaxes.run();
+    removePenalties.run();
+};
+
 exports.getAllJobs = () => {
     const allJobs = db.prepare("SELECT * FROM jobs");
     const result = allJobs.all();
